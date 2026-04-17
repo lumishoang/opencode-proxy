@@ -1,0 +1,30 @@
+{
+  "name": "opencode-proxy",
+  "version": "1.0.0",
+  "description": "OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "opencode",
+    "proxy",
+    "openai",
+    "api",
+    "llm"
+  ],
+  "author": "lumis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lumis/opencode-proxy"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2",
+    "uuid": "^10.0.0"
+  }
+}

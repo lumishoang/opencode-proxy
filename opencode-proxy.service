@@ -1,0 +1,19 @@
+[Unit]
+Description=OpenCode Proxy Server
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USER
+WorkingDirectory=/path/to/opencode-proxy
+Environment=PROXY_PORT=8080
+Environment=OPENCODE_BASE_URL=https://opencode.ai/zen/go/v1
+Environment=SESSION_TTL_MS=1800000
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
