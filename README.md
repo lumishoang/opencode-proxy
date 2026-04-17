@@ -1,5 +1,7 @@
 # OpenCode Proxy
 
+[![npm version](https://img.shields.io/npm/v/openclawcode.svg)](https://www.npmjs.com/package/openclawcode)
+
 OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.
 
 ## Architecture
@@ -18,9 +20,7 @@ Client (OpenAI SDK / OpenClaw / etc.) → Proxy (:8080) → OpenCode Zen API
 ### Installation
 
 ```bash
-git clone https://github.com/lumis/opencode-proxy.git
-cd opencode-proxy
-npm install
+npm install -g openclawcode
 ```
 
 ### Configuration
@@ -33,14 +33,11 @@ cp .env.example .env
 ### Running
 
 ```bash
-# Development
-npm run dev
-
-# Production
-npm start
+# Start the proxy
+openclawcode
 
 # Or with custom port and backend
-./start.sh 8080 https://opencode.ai/zen/go/v1
+openclawcode --port 8080 --backend https://opencode.ai/zen/go/v1
 ```
 
 ### Verify
@@ -68,11 +65,14 @@ const response = await client.chat.completions.create({
 
 ## Available Models
 
-- `glm-5` / `glm-5.1` (ZhipuAI)
-- `kimi-k2.5` (MoonshotAI)
-- `mimo-v2-pro` / `mimo-v2-omni` (Xiaomi)
-- `minimax-m2.5` / `minimax-m2.7` (MiniMax)
-- `qwen3.5-plus` / `qwen3.6-plus` (Qwen)
+Any model available on the OpenCode Zen API is supported. Specify the model name in your request:
+
+```javascript
+client.chat.completions.create({
+  model: 'your-model-name',
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
 
 ## API Endpoints
 
@@ -101,6 +101,16 @@ The proxy caches session IDs per conversation to maintain context between API ca
 - **TTL**: 30 minutes (configurable via `SESSION_TTL_MS`)
 - **Key**: Based on the first user message content
 - **Auto-cleanup**: Expired entries are automatically removed
+
+## Running from Source
+
+```bash
+git clone https://github.com/lumishoang/opencode-proxy.git
+cd opencode-proxy
+npm install
+npm run dev    # Development
+npm start      # Production
+```
 
 ## Systemd Service
 
