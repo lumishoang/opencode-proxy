@@ -1,6 +1,4 @@
-# OpenCode Proxy
-
-[![npm version](https://img.shields.io/npm/v/openclawcode.svg)](https://www.npmjs.com/package/openclawcode)
+# OpenClawCode
 
 OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.
 
@@ -25,19 +23,23 @@ npm install -g openclawcode
 
 ### Configuration
 
-```bash
-cp .env.example .env
-# Edit .env and add your API key
+Create a `.env` file in your working directory (e.g., `~/.openclaw/.env`):
+
+```env
+OPENCODE_GO_API_KEY=your_api_key_here
+PROXY_PORT=8080
+OPENCODE_BASE_URL=https://opencode.ai/zen/go/v1
+SESSION_TTL_MS=1800000
 ```
 
 ### Running
 
 ```bash
-# Start the proxy
-openclawcode
+# From the directory containing .env
+node $(npm root -g)/openclawcode/src/index.js
 
-# Or with custom port and backend
-openclawcode --port 8080 --backend https://opencode.ai/zen/go/v1
+# Or with custom env vars
+PROXY_PORT=3000 OPENCODE_GO_API_KEY=xxx node $(npm root -g)/openclawcode/src/index.js
 ```
 
 ### Verify
@@ -54,7 +56,7 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({
   baseURL: 'http://127.0.0.1:8080/v1',
-  apiKey: 'not-needed', // API key is configured in .env
+  apiKey: 'not-needed',
 });
 
 const response = await client.chat.completions.create({
@@ -65,14 +67,11 @@ const response = await client.chat.completions.create({
 
 ## Available Models
 
-Any model available on the OpenCode Zen API is supported. Specify the model name in your request:
-
-```javascript
-client.chat.completions.create({
-  model: 'your-model-name',
-  messages: [{ role: 'user', content: 'Hello!' }],
-});
-```
+- `glm-5` / `glm-5.1` (ZhipuAI)
+- `kimi-k2.5` (MoonshotAI)
+- `mimo-v2-pro` / `mimo-v2-omni` (Xiaomi)
+- `minimax-m2.5` / `minimax-m2.7` (MiniMax)
+- `qwen3.5-plus` / `qwen3.6-plus` (Qwen)
 
 ## API Endpoints
 
@@ -102,28 +101,6 @@ The proxy caches session IDs per conversation to maintain context between API ca
 - **Key**: Based on the first user message content
 - **Auto-cleanup**: Expired entries are automatically removed
 
-## Running from Source
-
-```bash
-git clone https://github.com/lumishoang/opencode-proxy.git
-cd opencode-proxy
-npm install
-npm run dev    # Development
-npm start      # Production
-```
-
-## Systemd Service
-
-```bash
-# Edit the service file with your user and path
-sed -i "s/YOUR_USER/$(whoami)/" opencode-proxy.service
-sed -i "s|/path/to/opencode-proxy|$(pwd)|" opencode-proxy.service
-
-sudo cp opencode-proxy.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now opencode-proxy
-```
-
 ## Features
 
 - OpenAI-compatible API (`/v1/chat/completions`)
@@ -131,6 +108,7 @@ sudo systemctl enable --now opencode-proxy
 - Tool calling passthrough
 - Session management with auto-cleanup
 - Configurable timeouts and limits
+- Loads `.env` from current working directory
 
 ## Limitations
 
