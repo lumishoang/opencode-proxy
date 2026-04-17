@@ -1,8 +1,11 @@
 {
   "name": "openclawcode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.",
   "main": "src/index.js",
+  "bin": {
+    "openclawcode": "src/index.js"
+  },
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
@@ -21,6 +24,10 @@
     "type": "git",
     "url": "https://github.com/lumishoang/opencode-proxy"
   },
+  "files": [
+    "src/",
+    ".env.example"
+  ],
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^4.21.0",
