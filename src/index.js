@@ -12,7 +12,7 @@ config();
 const app = express();
 
 // ─── Config ───────────────────────────────────────────────────────
-const OPENCODE_BASE_URL = process.env.OPENCODE_BASE_URL || 'https://opencode.ai/zen/go/v1';
+const OPENCODE_BASE_URL = process.env.OPENCODE_BASE_URL || 'https://opencode.ai/zen/v1';
 const OPENCODE_API_KEY = process.env.OPENCODE_GO_API_KEY || '';
 const PROXY_PORT = parseInt(process.env.PROXY_PORT || '8080');
 const SESSION_TTL_MS = parseInt(process.env.SESSION_TTL_MS || String(30 * 60 * 1000));
