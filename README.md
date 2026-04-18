@@ -67,11 +67,11 @@ const response = await client.chat.completions.create({
 
 ## Available Models
 
-- `glm-5` / `glm-5.1` (ZhipuAI)
-- `kimi-k2.5` (MoonshotAI)
-- `mimo-v2-pro` / `mimo-v2-omni` (Xiaomi)
-- `minimax-m2.5` / `minimax-m2.7` (MiniMax)
-- `qwen3.5-plus` / `qwen3.6-plus` (Qwen)
+Models are fetched dynamically from the OpenCode backend API. To list all available models:
+
+```bash
+curl http://127.0.0.1:8080/v1/models
+```
 
 ## API Endpoints
 
