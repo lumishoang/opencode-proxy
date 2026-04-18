@@ -1,6 +1,6 @@
 {
   "name": "openclawcode",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.",
   "main": "src/index.js",
   "bin": {
