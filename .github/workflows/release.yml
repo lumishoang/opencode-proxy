@@ -33,17 +33,18 @@ jobs:
           echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "changed=$( [ "$PREV_VERSION" != "$NEW_VERSION" ] && echo true || echo false )" >> $GITHUB_OUTPUT
 
-      - name: Fail if tag already exists
-        if: steps.version.outputs.changed == 'true'
+      - name: Check if tag exists
+        id: tagcheck
         run: |
           TAG="v${{ steps.version.outputs.new }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Error: tag $TAG already exists!"
-            exit 1
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Publish to npm
-        if: steps.version.outputs.changed == 'true'
+        if: steps.version.outputs.changed == 'true' && steps.tagcheck.outputs.exists != 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -51,12 +52,11 @@ jobs:
           npm publish --access public
 
       - name: Create tag & GitHub release
-        if: steps.version.outputs.changed == 'true'
+        if: steps.version.outputs.changed == 'true' && steps.tagcheck.outputs.exists != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="v${{ steps.version.outputs.new }}"
-          PREV="v${{ steps.version.outputs.prev }}"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
