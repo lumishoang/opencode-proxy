@@ -1,0 +1,69 @@
+name: Release & Publish
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - package.json
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    if: ${{ github.event.head_commit.author.email != 'github-actions[bot]@users.noreply.github.com' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Detect version change
+        id: version
+        run: |
+          PREV_VERSION=$(git show HEAD^:package.json | jq -r '.version')
+          NEW_VERSION=$(jq -r '.version' package.json)
+          echo "prev=$PREV_VERSION" >> $GITHUB_OUTPUT
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "changed=$( [ "$PREV_VERSION" != "$NEW_VERSION" ] && echo true || echo false )" >> $GITHUB_OUTPUT
+
+      - name: Fail if tag already exists
+        if: steps.version.outputs.changed == 'true'
+        run: |
+          TAG="v${{ steps.version.outputs.new }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Error: tag $TAG already exists!"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        if: steps.version.outputs.changed == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm install --ignore-scripts
+          npm publish --access public
+
+      - name: Create tag & GitHub release
+        if: steps.version.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v${{ steps.version.outputs.new }}"
+          PREV="v${{ steps.version.outputs.prev }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --generate-notes \
+            --target "$GITHUB_REF_NAME"
