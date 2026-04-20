@@ -46,7 +46,6 @@ PROXY_PORT=3000 OPENCODE_GO_API_KEY=xxx node $(npm root -g)/openclawcode/src/ind
 
 ```bash
 curl http://127.0.0.1:8080/health
-curl http://127.0.0.1:8080/v1/models
 ```
 
 ## Usage with OpenAI SDK
@@ -65,19 +64,10 @@ const response = await client.chat.completions.create({
 });
 ```
 
-## Available Models
-
-Models are fetched dynamically from the OpenCode backend API. To list all available models:
-
-```bash
-curl http://127.0.0.1:8080/v1/models
-```
-
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/v1/models` | List available models |
 | POST | `/v1/chat/completions` | Chat completion (OpenAI compatible) |
 | GET | `/health` | Health check |
 | POST | `/admin/clear-cache` | Clear session cache |
