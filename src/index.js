@@ -77,60 +77,6 @@ async function forwardToOpenCode(path, body, stream = false) {
   }
 }
 
-// ─── GET /v1/models ───────────────────────────────────────────────
-let cachedModels = null;
-let modelsCacheTime = 0;
-const MODELS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-async function fetchModelsFromBackend() {
-  if (cachedModels && (Date.now() - modelsCacheTime) < MODELS_CACHE_TTL) {
-    return cachedModels;
-  }
-
-  try {
-    const url = `${OPENCODE_BASE_URL}/models`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${OPENCODE_API_KEY}`,
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data?.data && Array.isArray(data.data)) {
-        cachedModels = data;
-        modelsCacheTime = Date.now();
-        console.log(`[proxy] fetched ${data.data.length} models from backend`);
-        return cachedModels;
-      }
-    }
-
-    console.warn(`[proxy] failed to fetch models from backend (status=${response.status}), using fallback`);
-  } catch (err) {
-    console.warn(`[proxy] error fetching models from backend: ${err.message}, using fallback`);
-  }
-
-  // Fallback: return a minimal list
-  return {
-    object: 'list',
-    data: [
-      { id: 'qwen3.6-plus', object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'opencode' },
-    ],
-  };
-}
-
-app.get('/v1/models', async (req, res) => {
-  const models = await fetchModelsFromBackend();
-  res.json(models);
-});
-
 // ─── POST /v1/chat/completions ────────────────────────────────────
 app.post('/v1/chat/completions', async (req, res) => {
   const { model, messages, stream, temperature, max_tokens, top_p, tools, tool_choice, response_format, stop } = req.body;
