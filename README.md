@@ -1,17 +1,17 @@
 # OpenClawCode
 
-OpenAI-compatible proxy for the OpenCode Zen API.
+OpenAI-compatible proxy for the OpenCode API.
 
 ## Why This Exists
 
 > **Want to use OpenCode models with OpenClaw?** This is the bridge.
 
 OpenCode provides powerful, affordable models (Qwen, MiniMax, GLM, …) but its API
-is not natively supported by OpenClaw. This proxy converts OpenCode Zen API calls
+is not natively supported by OpenClaw. This proxy converts OpenCode API calls
 into OpenAI-compatible format, so OpenClaw can use any OpenCode model out of the box.
 
 ```
-OpenClaw agent → OpenClawCode proxy (:8080) → OpenCode Zen API
+OpenClaw agent → OpenClawCode proxy (:8080) → OpenCode API
 ```
 
 **In 3 steps:**
@@ -25,7 +25,7 @@ OpenClaw agent → OpenClawCode proxy (:8080) → OpenCode Zen API
 ## Architecture
 
 ```
-Client (OpenAI SDK / OpenClaw / etc.) → Proxy (:8080) → OpenCode Zen API
+Client (OpenAI SDK / OpenClaw / etc.) → Proxy (:8080) → OpenCode API
 ```
 
 ## Quick Start
@@ -97,7 +97,7 @@ const response = await client.chat.completions.create({
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PROXY_PORT` | `8080` | Port proxy listens on |
-| `OPENCODE_BASE_URL` | `https://opencode.ai/zen/go/v1` | OpenCode Zen API URL |
+| `OPENCODE_BASE_URL` | `https://opencode.ai/zen/go/v1` | OpenCode API URL |
 | `OPENCODE_GO_API_KEY` | *(required)* | Your OpenCode API key |
 | `SESSION_TTL_MS` | `1800000` | Session cache TTL (30 min) |
 | `OPENCODE_PROXY_JSON_LIMIT_MB` | `200` | Max JSON body size (MB) |
