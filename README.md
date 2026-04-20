@@ -105,6 +105,54 @@ The proxy caches session IDs per conversation to maintain context between API ca
 - Token usage is not reported (always returns 0)
 - System messages are forwarded as-is
 
+## Integration with OpenClaw
+
+Once the proxy is running on port 8080, add the **opencode** provider to your `openclaw.json` under `models.providers`:
+
+```json
+{
+  "models": {
+    "providers": {
+      "opencode": {
+        "api": "openai-completions",
+        "baseUrl": "http://127.0.0.1:8080/v1",
+        "models": [
+          {
+            "id": "qwen3.6-plus",
+            "name": "OpenCode Qwen3.6 Plus",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": ["text"],
+            "contextWindow": 262144,
+            "maxTokens": 131072
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+Then assign the model to any agent:
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "my-agent",
+        "model": "qwen3.6-plus"
+      }
+    ]
+  }
+}
+```
+
+> **Note:** `contextWindow` and `maxTokens` should match actual model limits.
+> `qwen3.6-plus` is confirmed working. For other OpenCode models, test via the proxy
+> first or check the OpenCode docs at https://opencode.ai.
+No `apiKey` is needed for the opencode provider — the proxy handles authentication via the `OPENCODE_GO_API_KEY` env var.
+
 ## License
 
 MIT
