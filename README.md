@@ -46,7 +46,6 @@ PROXY_PORT=3000 OPENCODE_GO_API_KEY=xxx node $(npm root -g)/openclawcode/src/ind
 
 ```bash
 curl http://127.0.0.1:8080/health
-curl http://127.0.0.1:8080/v1/models
 ```
 
 ## Usage with OpenAI SDK
@@ -65,56 +64,10 @@ const response = await client.chat.completions.create({
 });
 ```
 
-## Available Models
-
-Models are fetched dynamically from the OpenCode backend API. To list all available models:
-
-```bash
-curl http://127.0.0.1:8080/v1/models
-```
-
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/v1/models` | List available models |
-| POST | `/v1/chat/completions` | Chat completion (OpenAI compatible) |
+| POST | `/v1/chat/completions` | Chat completion (streaming + non-streaming) |
 | GET | `/health` | Health check |
 | POST | `/admin/clear-cache` | Clear session cache |
-
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PROXY_PORT` | `8080` | Port proxy listens on |
-| `OPENCODE_BASE_URL` | `https://opencode.ai/zen/go/v1` | OpenCode Zen API URL |
-| `OPENCODE_GO_API_KEY` | *(required)* | Your OpenCode API key |
-| `SESSION_TTL_MS` | `1800000` | Session cache TTL (30 min) |
-| `OPENCODE_PROXY_JSON_LIMIT_MB` | `200` | Max JSON body size (MB) |
-| `OPENCODE_BACKEND_TIMEOUT_MS` | `90000` | Backend timeout (90s) |
-
-## Session Cache
-
-The proxy caches session IDs per conversation to maintain context between API calls.
-
-- **TTL**: 30 minutes (configurable via `SESSION_TTL_MS`)
-- **Key**: Based on the first user message content
-- **Auto-cleanup**: Expired entries are automatically removed
-
-## Features
-
-- OpenAI-compatible API (`/v1/chat/completions`)
-- Streaming support (SSE)
-- Tool calling passthrough
-- Session management with auto-cleanup
-- Configurable timeouts and limits
-- Loads `.env` from current working directory
-
-## Limitations
-
-- Token usage is not reported (always returns 0)
-- System messages are forwarded as-is
-
-## License
-
-MIT

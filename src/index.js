@@ -39,97 +39,26 @@ function getOrCreateSession(conversationId) {
   return entry;
 }
 
-function extractAssistantText(message) {
-  if (!message) return '';
-  if (typeof message.content === 'string') return message.content;
-  if (Array.isArray(message.content)) {
-    return message.content
-      .map((part) => {
-        if (typeof part === 'string') return part;
-        if (part && typeof part.text === 'string') return part.text;
-        return '';
-      })
-      .join('')
-      .trim();
-  }
-  return '';
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────
-async function forwardToOpenCode(path, body, stream = false) {
-  const url = `${OPENCODE_BASE_URL}${path}`;
+async function forwardToOpenCode(pathSuffix, body, stream = false) {
+  const url = `${OPENCODE_BASE_URL}${pathSuffix}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), BACKEND_TIMEOUT_MS);
-
   try {
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENCODE_API_KEY}`,
-      ...(stream ? { Accept: 'text/event-stream' } : {}),
-    },
-    body: JSON.stringify(body),
-    signal: controller.signal,
-  });
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENCODE_API_KEY}`,
+        ...(stream ? { Accept: 'text/event-stream' } : {}),
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timeout);
   }
 }
-
-// ─── GET /v1/models ───────────────────────────────────────────────
-let cachedModels = null;
-let modelsCacheTime = 0;
-const MODELS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-async function fetchModelsFromBackend() {
-  if (cachedModels && (Date.now() - modelsCacheTime) < MODELS_CACHE_TTL) {
-    return cachedModels;
-  }
-
-  try {
-    const url = `${OPENCODE_BASE_URL}/models`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${OPENCODE_API_KEY}`,
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data?.data && Array.isArray(data.data)) {
-        cachedModels = data;
-        modelsCacheTime = Date.now();
-        console.log(`[proxy] fetched ${data.data.length} models from backend`);
-        return cachedModels;
-      }
-    }
-
-    console.warn(`[proxy] failed to fetch models from backend (status=${response.status}), using fallback`);
-  } catch (err) {
-    console.warn(`[proxy] error fetching models from backend: ${err.message}, using fallback`);
-  }
-
-  // Fallback: return a minimal list
-  return {
-    object: 'list',
-    data: [
-      { id: 'qwen3.6-plus', object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'opencode' },
-    ],
-  };
-}
-
-app.get('/v1/models', async (req, res) => {
-  const models = await fetchModelsFromBackend();
-  res.json(models);
-});
 
 // ─── POST /v1/chat/completions ────────────────────────────────────
 app.post('/v1/chat/completions', async (req, res) => {
@@ -151,13 +80,11 @@ app.post('/v1/chat/completions', async (req, res) => {
     conversationKey = textContent.substring(0, 100) || uuidv4();
   }
   const conversationId = `conv_${conversationKey}`;
-
   const sessionEntry = getOrCreateSession(conversationId);
 
-  // Build the request body for OpenCode Go (OpenAI-compatible) - forward ALL tool calling params
   const forwardBody = {
     model: model || 'qwen3.6-plus',
-    messages: messages,
+    messages,
     stream: !!stream,
     ...(temperature !== undefined && { temperature }),
     ...(max_tokens !== undefined && { max_tokens }),
@@ -168,11 +95,10 @@ app.post('/v1/chat/completions', async (req, res) => {
     ...(stop && { stop }),
   };
 
-  console.log(`[proxy] chat.completions model=${forwardBody.model} stream=${!!stream} messages=${Array.isArray(messages) ? messages.length : 0} tools=${Array.isArray(tools) ? tools.length : 0}`);
+  console.log(`[proxy] chat.completions model=${forwardBody.model} stream=${!!stream}`);
 
   try {
     if (stream) {
-      // ─── Streaming: forward and bridge SSE ────────────────────
       const opencodeRes = await forwardToOpenCode('/chat/completions', forwardBody, true);
 
       if (!opencodeRes.ok) {
@@ -204,10 +130,6 @@ app.post('/v1/chat/completions', async (req, res) => {
               } else {
                 try {
                   const chunk = JSON.parse(dataStr);
-                  // Pass through tool_calls delta if present
-                  if (chunk.choices?.[0]?.delta?.tool_calls) {
-                    console.log(`[proxy] stream tool_calls delta`);
-                  }
                   res.write(`data: ${JSON.stringify(chunk)}\n\n`);
                 } catch {
                   res.write(`${line}\n`);
@@ -222,17 +144,8 @@ app.post('/v1/chat/completions', async (req, res) => {
       res.end();
 
     } else {
-      // ─── Non-streaming: forward and return ────────────────────
       const opencodeRes = await forwardToOpenCode('/chat/completions', forwardBody);
       const data = await opencodeRes.json();
-
-      const firstChoice = data?.choices?.[0]?.message;
-      const contentText = typeof firstChoice?.content === 'string' ? firstChoice.content : '';
-      const reasoningText = typeof firstChoice?.reasoning_content === 'string' ? firstChoice.reasoning_content : '';
-      console.log(
-        `[proxy] upstream status=${opencodeRes.status} hasChoices=${Array.isArray(data?.choices)} ` +
-        `contentLen=${contentText.length} reasoningLen=${reasoningText.length}`
-      );
 
       if (!opencodeRes.ok) {
         return res.status(opencodeRes.status).json(data);
