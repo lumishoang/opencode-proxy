@@ -1,6 +1,26 @@
 # OpenClawCode
 
-OpenAI-compatible proxy for the OpenCode Zen API. Bridge OpenCode models to any OpenAI-compatible client.
+OpenAI-compatible proxy for the OpenCode Zen API.
+
+## Why This Exists
+
+> **Want to use OpenCode models with OpenClaw?** This is the bridge.
+
+OpenCode provides powerful, affordable models (Qwen, MiniMax, GLM, …) but its API
+is not natively supported by OpenClaw. This proxy converts OpenCode Zen API calls
+into OpenAI-compatible format, so OpenClaw can use any OpenCode model out of the box.
+
+```
+OpenClaw agent → OpenClawCode proxy (:8080) → OpenCode Zen API
+```
+
+**In 3 steps:**
+
+1. `npm install -g openclawcode`
+2. Run the proxy (see [Quick Start](#quick-start))
+3. Add the `opencode` provider to your `openclaw.json` — see [Integration with OpenClaw](#integration-with-openclaw)
+
+---
 
 ## Architecture
 
