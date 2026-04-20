@@ -119,20 +119,11 @@ Once the proxy is running on port 8080, add the **opencode** provider to your `o
         "models": [
           {
             "id": "qwen3.6-plus",
-            "name": "OpenCode Go Qwen3.6 Plus",
+            "name": "OpenCode Qwen3.6 Plus",
             "api": "openai-completions",
             "reasoning": true,
             "input": ["text"],
             "contextWindow": 262144,
-            "maxTokens": 131072
-          },
-          {
-            "id": "minimax-m2.7",
-            "name": "OpenCode Go MiniMax M2.7",
-            "api": "openai-completions",
-            "reasoning": true,
-            "input": ["text"],
-            "contextWindow": 204800,
             "maxTokens": 131072
           }
         ]
@@ -157,23 +148,9 @@ Then assign the model to any agent:
 }
 ```
 
-> **Note:** `contextWindow` and `maxTokens` values should match the actual limits
-> of the OpenCode model. The examples above are from the production deployment.
-
-### Available models (as of 2026-04-20)
-
-| Model ID | Context | Max Output | Reasoning |
-|----------|---------|------------|-----------|
-| `qwen3.6-plus` | 262K | 131K | ✅ |
-| `qwen3.5-plus` | 262K | 131K | ✅ |
-| `minimax-m2.7` | 204K | 131K | ✅ |
-| `minimax-m2.5` | 204K | 131K | ✅ |
-| `glm-5` | 204K | 131K | ✅ |
-| `glm-5.1` | 200K | 131K | ✅ |
-| `kimi-k2.5` | 262K | 262K | ✅ |
-| `mimo-v2-pro` | 1M | 128K | ✅ |
-| `mimo-v2-omni` | 256K | 128K | ✅ |
-
+> **Note:** `contextWindow` and `maxTokens` should match actual model limits.
+> `qwen3.6-plus` is confirmed working. For other OpenCode models, test via the proxy
+> first or check the OpenCode docs at https://opencode.ai.
 No `apiKey` is needed for the opencode provider — the proxy handles authentication via the `OPENCODE_GO_API_KEY` env var.
 
 ## License
